@@ -1,0 +1,1 @@
+from folder open cmd, run : uvicorn main:app --reload

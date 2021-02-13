@@ -1,0 +1,19 @@
+in mapa mama cream mapa src unde o sa fie codul
+
+in mapa mama cream venv cu:
+	python -m venv env
+
+ne ducem in env dupa in scripts si actvivam:
+	cd env/Scripts/activate
+
+iseim din env si ne ducem in mapa src
+	cd ../../src
+
+daca avem un fisier req.txt in care se contin dependentele il instalam cu:
+	pip install -r req.txt
+
+verificam dependentele cu:
+	pip freeze
+
+dupa ce am finisat cu proiectul si vrem sa salvam dependentele intr-un file :
+	pip freeze > req.txt
