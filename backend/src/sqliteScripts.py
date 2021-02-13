@@ -33,7 +33,7 @@ class user_db(object):
 
 	def __init__(self, user: User):
 			self.username = user.username
-			self.password_hash = user.password_hash
+			self.password = user.password
 			self.total_winned_points = user.total_winned_points
 			self.played_games = user.played_games
 			self.user_type = user.user_type
@@ -65,10 +65,10 @@ class user_db(object):
 			user_type
 			) VALUES (?,?,?,?,?);""", (
 				self.username,
-				self.password_hash,
+				self.password,
 				self.played_games,
 				self.total_winned_points,
-				self.user_type.value
+				self.user_type
 				))
 
 		userid =  c.lastrowid

@@ -7,3 +7,6 @@ in backend map we have:
 
 in frontend map we have the quiz map that represent the react project
 	
+
+to run:
+	activate venv from back, then being venv go to front and run "npm run dev"

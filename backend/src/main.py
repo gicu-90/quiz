@@ -52,13 +52,13 @@ def get_current_user(token: str = Depends(oauth2scheme)):
 	return user
 		
 
-@app.get("/")
+@app.get("/homee")
 def home():
 	return {"keyHello"}
 
 @app.post("/create-user", response_model=User)
 def create_user(user: User):
-	user.password_hash = bcrypt.hashpw(user.password_hash.encode('UTF-8'), bcrypt.gensalt(14))
+	user.password = bcrypt.hashpw(user.password.encode('UTF-8'), bcrypt.gensalt(14))
 	db_user = user_db(user)
 	user.id = db_user.createUser_returnId()
 	print("user created")

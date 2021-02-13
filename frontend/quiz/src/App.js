@@ -1,19 +1,20 @@
-import logo from './logo.svg';
-import './App.css';
-import Message from './components/Message'
-
+import React from 'react'
+import {BrowserRouter as Router} from 'react-router-dom'
+import 'materialize-css'
+import { useRoutes } from './routes';
 
 function App() {
+
+  const routes = useRoutes(false)
+
   return (
-    <div className="App">
-      <header className="App-header">
-        <img src={logo} className="App-logo" alt="logo" />
-        
-          wazzzaaap
-        <Message />
-      </header>
-    </div>
+    <Router>
+      <div className="container">
+        {routes}
+      </div>
+    </Router>
+
   );
 }
 
-export default App;
+export default App

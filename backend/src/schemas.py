@@ -10,9 +10,9 @@ class User_Type(Enum):
 	Admin = 1
 
 class User(BaseModel):
-	id: int
+	id: int = 0
 	username: str = Field(..., max_length=100)
-	password_hash: str = Field(..., min_length=3)
+	password: str = Field(..., min_length=3)
 	total_winned_points: int = 0
 	played_games: int = 0
 
@@ -24,7 +24,7 @@ class User(BaseModel):
 		usermodel = User(
 			id=id, 
 			username=username, 
-			password_hash=password_hash, 
+			password=password_hash, 
 			total_winned_points=total_winned_points, 
 			played_games=played_games, 
 			user_type=user_type
