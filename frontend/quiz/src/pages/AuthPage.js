@@ -1,11 +1,20 @@
-import React, { useState } from 'react'
+import React, { useContext, useEffect, useState } from 'react'
+import { AuthContext } from '../context/AuthContext'
 import { useHttp } from '../hooks/http.hook'
+import { useMessage } from '../hooks/message.hook'
 
 export const AuthPage = () => {
-    const {loading, request} = useHttp()
+    const auth = useContext(AuthContext)
+    const message = useMessage()
+    const {loading, request, error, clearError} = useHttp()
     const [form, setForm] = useState({
         username: '', password: ''
     })
+
+    useEffect(() => {
+        message(error)
+        clearError()
+    }, [error, message, clearError])
 
     const changeHandler = event => {
         setForm({ ...form, [event.target.name]: event.target.value })
@@ -13,9 +22,15 @@ export const AuthPage = () => {
 
     const registerHandler = async () => {
         try {
-            let jsonFormData = JSON.stringify(form)
-            const data = await request('/create-user', "POST", jsonFormData, {"Content-Type":"application/json"})
+            const data = await request('/create-user', "POST", {...form}, {})
             console.log('Data', data)
+        } catch (e) {}
+    }
+    
+    const loginHandler = async () => {
+        try {
+            const data = await request('/login', "POST", {...form}, {}, {isOAuth:true})
+            auth.login(data.access_token, data.token_type)
         } catch (e) {}
     }
 
@@ -56,6 +71,7 @@ export const AuthPage = () => {
                         <button 
                             className="btn yellow darken-4" 
                             style={{marginRight: 10}}
+                            onClick={loginHandler}
                             disabled={loading}
                         >
                             Login

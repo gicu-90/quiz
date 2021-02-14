@@ -40,19 +40,25 @@ class user_db(object):
 
 		
 	def clear_users():
+		stackpath = "clear_users"
+		print("sql---->", stackpath)
+
 		conn = sqlite3.connect('quiz.db')
 		c = conn.cursor()
 		c.execute("DELETE FROM users")
 
 		conn.commit()
 		conn.close()
-		print("-------------------------------------------------------------")
 		print("all is cleared")
+		print("<----sql", stackpath)
 
 
 
 
 	def createUser_returnId(self):
+		stackpath = "createUser_returnId"
+		print("sql---->", stackpath)
+
 		conn = sqlite3.connect('quiz.db')
 		c = conn.cursor()
 		userid = 0
@@ -73,43 +79,44 @@ class user_db(object):
 
 		userid =  c.lastrowid
 
-		c.execute("SELECT * FROM users")
-		items = c.fetchall()
-		for item in items:
-			print(item)
-
-
 		conn.commit()
 		conn.close()
-		print("-------------------------------------------------------------")
 		print("new user created")
 
+		print("<----sql", stackpath)
 		return userid
 
 
-
-
-
 	def get_user_by_username(username: str):
+			stackpath = "get_user_by_username"
+			print("sql---->", stackpath)
+
 			conn = sqlite3.connect('quiz.db')
 			c = conn.cursor()
 			userid = 0
 
 			c.execute("SELECT * FROM users WHERE username = '{username}' LIMIT 1".format(username=username))
 			items = c.fetchone()
-			print(c.lastrowid)
+
+			if(items is None):
+				print("no item match from query")
+				print("<----sql", stackpath)
+				return False
+
 			items = (c.lastrowid,) + items
-			
-			print("-------------------------------------------------------------")
-			print("user extracted")
-			print(items)
 
 			conn.commit()
 			conn.close()
 
+			print("user extracted")
+			print("<----sql", stackpath)
 			return items
 
+
 	def get_user_by_id(rowid: int):
+			stackpath = "get_user_by_id"
+			print("sql---->", stackpath)
+
 			conn = sqlite3.connect('quiz.db')
 			c = conn.cursor()
 			userid = 0
@@ -119,17 +126,16 @@ class user_db(object):
 			items = c.fetchone()
 			
 			if(items is None):
-				print("no item match fro query")
+				print("no item match from query")
+				print("<----sql", stackpath)
 				return False
 
 			items = (c.lastrowid,) + items
 			
-			print("-------------------------------------------------------------")
-			print("user extracted")
-			print(items)
-
 			conn.commit()
 			conn.close()
 
+			print("user extracted")
+			print("<----sql", stackpath)
 			return items
 
