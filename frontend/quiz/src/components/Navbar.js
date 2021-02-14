@@ -10,14 +10,13 @@ export const Navbar = () => {
         auth.logout()
         history.push('/')
     }
-
     return (
         <nav>
             <div className="nav-wrapper blue darken-1" style={{ padding: '0 2rem' }}>
                 <a href="/" className="brand-logo">QUIZ</a>
                 <ul id="nav-mobile" className="right">
-                    <li><NavLink to="/create">Sass</NavLink></li>
-                    <li><NavLink to="/links">Sass</NavLink></li>
+                    { !!auth.userType && <li><NavLink to="/create">Create Game</NavLink></li>}
+                    <li><NavLink to="/links">Games</NavLink></li>
                     <li><a href="/" onClick={logoutHandler}>Logout</a></li>
                 </ul>
             </div>

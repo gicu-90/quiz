@@ -29,7 +29,7 @@ export const AuthPage = () => {
         try {
             const data = await request('/register', "POST", {...form}, {})
             console.log("returned data", data)
-            auth.login(data.access_token, data.token_type)
+            auth.login(data.access_token, data.user_type)
             console.log("legdin")
         } catch (e) {}
     }
@@ -37,7 +37,7 @@ export const AuthPage = () => {
     const loginHandler = async () => {
         try {
             const data = await request('/login', "POST", {...form}, {}, {isOAuth:true})
-            auth.login(data.access_token, data.token_type)
+            auth.login(data.access_token, data.user_type)
         } catch (e) {}
     }
 

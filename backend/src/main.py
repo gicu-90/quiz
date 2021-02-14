@@ -102,7 +102,7 @@ def register_user(user: User):
 	token = jwt.encode(usermodel.dict(), JWT_SECRET)
 	
 	print("<----post", stackpath)
-	return {'access_token' : token, 'token_type' : 'bearer'}
+	return {'access_token' : token, 'user_type' : usermodel.user_type}
 
 
 
@@ -122,7 +122,7 @@ def login_generate_token(form_data: OAuth2PasswordRequestForm = Depends()):
 	token = jwt.encode(usermodel.dict(), JWT_SECRET)
 	
 	print("<----post", stackpath)
-	return {'access_token' : token, 'token_type' : 'bearer'}
+	return {'access_token' : token, 'user_type' : usermodel.user_type}
 
 
 
