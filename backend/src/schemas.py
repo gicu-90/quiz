@@ -19,6 +19,9 @@ class User(BaseModel):
 	user_type: int = User_Type.User.value
 	
 	def to_User_model(db_model):
+		stackpath = "to_User_model"
+		print("model---->", stackpath)
+
 		(id, username, password_hash, total_winned_points, played_games, user_type) = db_model
 
 		usermodel = User(
@@ -30,6 +33,7 @@ class User(BaseModel):
 			user_type=user_type
 		) 
 		
+		print("<----model", stackpath)
 		return usermodel
 
 

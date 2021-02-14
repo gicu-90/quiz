@@ -1,5 +1,6 @@
 backend - fastapi
 frontend - react
+	styles - materialize
 
 in backend map we have:
 	env map witch represent the virtual_invironment for backend,

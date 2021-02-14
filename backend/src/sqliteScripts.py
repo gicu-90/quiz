@@ -53,8 +53,6 @@ class user_db(object):
 		print("<----sql", stackpath)
 
 
-
-
 	def createUser_returnId(self):
 		stackpath = "createUser_returnId"
 		print("sql---->", stackpath)

@@ -38,7 +38,6 @@ def get_user_by_username(username: str):
 	print("<----def", stackpath)
 	return user
 
-
 def authenticate_user(username: str, password: str):
 	stackpath = "authenticate_user"
 	print("def---->", stackpath)
@@ -69,11 +68,27 @@ def get_current_user(token: str = Depends(oauth2scheme)):
 	print("<----def", stackpath)
 	return user
 		
-
-@app.post("/create-user", response_model=User)
 def create_user(user: User):
 	stackpath = "create_user"
+	print("def---->", stackpath)
+	
+	user.password = bcrypt.hashpw(user.password.encode('UTF-8'), bcrypt.gensalt(14))
+	db_user = user_db(user)
+	user.id = db_user.createUser_returnId()
+
+	user = get_user_by_username(username=user.username)
+
+	print("user created")
+	print("<----def", stackpath)
+	return user
+
+
+
+@app.post("/register")
+def register_user(user: User):
+	stackpath = "register_user"
 	print("post---->", stackpath)
+	
 	exist_user = get_user_by_username(user.username)
 	if (exist_user):
 		raise HTTPException(
@@ -81,13 +96,13 @@ def create_user(user: User):
 			detail='Username already taken'
 		)
 
-	user.password = bcrypt.hashpw(user.password.encode('UTF-8'), bcrypt.gensalt(14))
-	db_user = user_db(user)
-	user.id = db_user.createUser_returnId()
+	new_user = create_user(user)
 
-	print("user created")
+	usermodel = User.to_User_model(new_user)
+	token = jwt.encode(usermodel.dict(), JWT_SECRET)
+	
 	print("<----post", stackpath)
-	return user
+	return {'access_token' : token, 'token_type' : 'bearer'}
 
 
 
@@ -130,6 +145,7 @@ def clear_users_table():
 	
 	print("<----get", stackpath)
 	return True
+
 
 
 @app.get("/get-user-by-id")

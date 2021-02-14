@@ -16,14 +16,21 @@ export const AuthPage = () => {
         clearError()
     }, [error, message, clearError])
 
+    useEffect(() => {
+        window.M.updateTextFields()
+    }, [])
+
+
     const changeHandler = event => {
         setForm({ ...form, [event.target.name]: event.target.value })
     }
 
     const registerHandler = async () => {
         try {
-            const data = await request('/create-user', "POST", {...form}, {})
-            console.log('Data', data)
+            const data = await request('/register', "POST", {...form}, {})
+            console.log("returned data", data)
+            auth.login(data.access_token, data.token_type)
+            console.log("legdin")
         } catch (e) {}
     }
     
