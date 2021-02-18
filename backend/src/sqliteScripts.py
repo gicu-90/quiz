@@ -1,47 +1,20 @@
 import sqlite3
-from schemas import User  
-
-# c.execute("""CREATE TABLE games (
-# 		game_name text,
-# 		questions_number int,
-# 		played_statistics text
-# 	)""")
-
-
-# c.execute("""CREATE TABLE questions (
-# 		game_id text,
-# 		question_type text,
-# 		question_order int,
-# 		question text,
-# 		correct_resp text,
-# 		other_variants text,
-# 		winning_points int
-# 	)""")
-
-
-
-# c.execute("""CREATE TABLE users (
-# 		username text,
-# 		password text,
-# 		played_games int,
-# 		total_winned_points int,
-# 		user_type int
-# 	)""")
-	
+from schemas import User, Game, Question
+from typing import List
 
 class user_db(object):
 
 	def __init__(self, user: User):
-			self.username = user.username
-			self.password = user.password
-			self.total_winned_points = user.total_winned_points
-			self.played_games = user.played_games
-			self.user_type = user.user_type
+		self.username = user.username
+		self.password = user.password
+		self.total_winned_points = user.total_winned_points
+		self.played_games = user.played_games
+		self.user_type = user.user_type
 
 		
 	def clear_users():
 		stackpath = "clear_users"
-		print("sql---->", stackpath)
+		print('\x1b[6;30;42m' + "sql---->" + '\x1b[0m', stackpath )
 
 		conn = sqlite3.connect('quiz.db')
 		c = conn.cursor()
@@ -49,13 +22,14 @@ class user_db(object):
 
 		conn.commit()
 		conn.close()
+
 		print("all is cleared")
-		print("<----sql", stackpath)
+		print('\x1b[6;30;42m' + "<----sql" + '\x1b[0m', stackpath )
 
 
 	def createUser_returnId(self):
 		stackpath = "createUser_returnId"
-		print("sql---->", stackpath)
+		print('\x1b[6;30;42m' + "sql---->" + '\x1b[0m', stackpath )
 
 		conn = sqlite3.connect('quiz.db')
 		c = conn.cursor()
@@ -81,59 +55,175 @@ class user_db(object):
 		conn.close()
 		print("new user created")
 
-		print("<----sql", stackpath)
+		print('\x1b[6;30;42m' + "<----sql" + '\x1b[0m', stackpath )
 		return userid
 
 
 	def get_user_by_username(username: str):
-			stackpath = "get_user_by_username"
-			print("sql---->", stackpath)
+		stackpath = "get_user_by_username"
+		print('\x1b[6;30;42m' + "sql---->" + '\x1b[0m', stackpath )
 
-			conn = sqlite3.connect('quiz.db')
-			c = conn.cursor()
-			userid = 0
+		conn = sqlite3.connect('quiz.db')
+		c = conn.cursor()
+		userid = 0
 
-			c.execute("SELECT * FROM users WHERE username = '{username}' LIMIT 1".format(username=username))
-			items = c.fetchone()
+		c.execute("SELECT * FROM users WHERE username = '{username}' LIMIT 1".format(username=username))
+		items = c.fetchone()
 
-			if(items is None):
-				print("no item match from query")
-				print("<----sql", stackpath)
-				return False
-
-			items = (c.lastrowid,) + items
-
-			conn.commit()
-			conn.close()
-
-			print("user extracted")
+		if(items is None):
+			print("no item match from query")
 			print("<----sql", stackpath)
-			return items
+			return False
+
+		items = (c.lastrowid,) + items
+
+		conn.commit()
+		conn.close()
+
+		print("user extracted")
+		print('\x1b[6;30;42m' + "<----sql" + '\x1b[0m', stackpath )
+		return items
 
 
 	def get_user_by_id(rowid: int):
-			stackpath = "get_user_by_id"
-			print("sql---->", stackpath)
+		stackpath = "get_user_by_id"
+		print('\x1b[6;30;42m' + "sql---->" + '\x1b[0m', stackpath )
 
-			conn = sqlite3.connect('quiz.db')
-			c = conn.cursor()
-			userid = 0
+		conn = sqlite3.connect('quiz.db')
+		c = conn.cursor()
+		userid = 0
 
-			c.execute("SELECT * FROM users WHERE rowid={rowid};".format(rowid=rowid+1))
+		c.execute("SELECT * FROM users WHERE rowid={rowid};".format(rowid=rowid+1))
 
-			items = c.fetchone()
+		items = c.fetchone()
 			
-			if(items is None):
-				print("no item match from query")
-				print("<----sql", stackpath)
-				return False
-
-			items = (c.lastrowid,) + items
-			
-			conn.commit()
-			conn.close()
-
-			print("user extracted")
+		if(items is None):
+			print("no item match from query")
 			print("<----sql", stackpath)
-			return items
+			return False
 
+		items = (c.lastrowid,) + items
+			
+		conn.commit()
+		conn.close()
+
+		print("user extracted")
+		print('\x1b[6;30;42m' + "<----sql" + '\x1b[0m', stackpath )
+		return items
+
+
+class games_db(object):
+	def __init__(self, game: Game):
+		self.game_name = game.game_name
+		self.questions_number = game.questions_number
+		self.played_statistics = game.played_statistics
+
+	def createGame_returnId(self):
+		stackpath = "createGame_returnId"
+		print('\x1b[6;30;42m' + "sql---->" + '\x1b[0m', stackpath )
+
+		conn = sqlite3.connect('quiz.db')
+		c = conn.cursor()
+		userid = 0
+
+		c.execute("""INSERT INTO games (
+			game_name,
+			questions_number,
+			played_statistics
+			) VALUES (?,?,?);""", (
+				self.game_name,
+				self.questions_number,
+				self.played_statistics,
+				))
+
+		gameid =  c.lastrowid
+
+		conn.commit()
+		conn.close()
+		print("new game created")
+
+		print('\x1b[6;30;42m' + "<----sql" + '\x1b[0m', stackpath )
+		return gameid
+
+	def get_game_by_id(gameId: int):
+		stackpath = "get_game_by_id"
+		print('\x1b[6;30;42m' + "sql---->" + '\x1b[0m', stackpath )
+
+		conn = sqlite3.connect('quiz.db')
+		c = conn.cursor()
+		userid = 0
+
+		c.execute("SELECT * FROM games WHERE rowid = '{gameId}' LIMIT 1".format(gameId=gameId))
+		items = c.fetchone()
+
+		if(items is None):
+			print("no item match from query")
+			print("<----sql", stackpath)
+			return False
+
+		items = (c.lastrowid,) + items
+
+		conn.commit()
+		conn.close()
+
+		print('\x1b[6;30;42m' + "<----sql" + '\x1b[0m', stackpath )
+		return items
+
+
+class questions_db(object):
+	def __init__(self, questions: List[Question]):
+		self.questions = questions
+
+
+	def create_questions(self, gameId: int):
+		stackpath = "create_questions"
+		print('\x1b[6;30;42m' + "sql---->" + '\x1b[0m', stackpath )
+
+		conn = sqlite3.connect('quiz.db')
+		c = conn.cursor()
+		userid = 0
+
+		for question in self.questions:
+			c.execute("""INSERT INTO questions (
+				game_id,
+				question_type,
+				question,
+				correct_resp,
+				other_variants,
+				winning_points
+				) VALUES (?,?,?,?,?,?);""", (
+					gameId,
+					question.question_type,
+					question.question,
+					question.correct_resp,
+					question.other_variants,
+					question.winning_points,
+					))
+
+		conn.commit()
+		conn.close()
+		print("new questions created")
+		print('\x1b[6;30;42m' + "<----sql" + '\x1b[0m', stackpath )
+
+
+	def get_questions_by_gameid(gameId: int):
+		stackpath = "get_questions_by_gameid"
+		print('\x1b[6;30;42m' + "sql---->" + '\x1b[0m', stackpath )
+
+		conn = sqlite3.connect('quiz.db')
+		c = conn.cursor()
+		userid = 0
+
+		c.execute("SELECT * FROM questions WHERE game_id = '{gameId}' LIMIT 1".format(gameId=gameId))
+		items = c.fetchall()
+
+		if(items is None):
+			print("no item match from query")
+			print("<----sql", stackpath)
+			return False
+
+		conn.commit()
+		conn.close()
+
+		print('\x1b[6;30;42m' + "<----sql" + '\x1b[0m', stackpath )
+		return items

@@ -1,6 +1,6 @@
 from pydantic import BaseModel, validator, Field
 from datetime import date
-from typing import List
+from typing import List, Optional
 from enum import Enum
 import bcrypt
 from fastapi.security import OAuth2PasswordBearer, OAuth2PasswordRequestForm
@@ -20,7 +20,7 @@ class User(BaseModel):
 	
 	def to_User_model(db_model):
 		stackpath = "to_User_model"
-		print("model---->", stackpath)
+		print("def-model---->", stackpath)
 
 		(id, username, password_hash, total_winned_points, played_games, user_type) = db_model
 
@@ -33,10 +33,23 @@ class User(BaseModel):
 			user_type=user_type
 		) 
 		
-		print("<----model", stackpath)
+		print("<----def-model", stackpath)
 		return usermodel
 
 
+	
+class Game(BaseModel):
+	id: int = None
+	game_name: str = Field(..., max_length=100)
+	questions_number: int = None
+	played_statistics: str = None
 
-
+class Question(BaseModel):
+	id: int = None
+	game_id: int = None
+	question_type: str = None
+	question: str = None
+	correct_resp: str = None
+	other_variants: str = None
+	winning_points: int = None
 
