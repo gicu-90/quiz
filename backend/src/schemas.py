@@ -38,18 +38,56 @@ class User(BaseModel):
 
 
 	
+class Question_Type(Enum):
+	RADIOBTN = 0
+	CHECKBOX = 1
+	
 class Game(BaseModel):
 	id: int = None
 	game_name: str = Field(..., max_length=100)
 	questions_number: int = None
 	played_statistics: str = None
+	
+	def to_Game_model(db_model):
+		stackpath = "to_Game_model"
+		print("def-model---->", stackpath)
+
+		(id, game_name, questions_number, played_statistics) = db_model
+
+		gamemodel = Game(
+			id=id, 
+			game_name=game_name, 
+			questions_number=questions_number, 
+			played_statistics=played_statistics 
+		) 
+		
+		print("<----def-model", stackpath)
+		return gamemodel
 
 class Question(BaseModel):
 	id: int = None
 	game_id: int = None
-	question_type: str = None
-	question: str = None
-	correct_resp: str = None
-	other_variants: str = None
-	winning_points: int = None
+	question_type: str 
+	question: str = Field(...)
+	correct_resp: str = Field(...)
+	other_variants: str = Field(...)
+	winning_points: int = Field(...)
+	
+	def to_Question_model(db_model):
+		stackpath = "to_Question_model"
+		print("def-model---->", stackpath)
 
+		(id, game_id, question_type, question, correct_resp, other_variants, winning_points) = db_model
+
+		questionmodel = Question(
+			id=id,
+			game_id=game_id, 
+			question_type=question_type, 
+			question=question,
+			correct_resp=correct_resp,
+			other_variants=other_variants,
+			winning_points=winning_points 
+		) 
+		
+		print("<----def-model", stackpath)
+		return questionmodel

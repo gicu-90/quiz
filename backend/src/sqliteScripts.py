@@ -169,11 +169,35 @@ class games_db(object):
 		print('\x1b[6;30;42m' + "<----sql" + '\x1b[0m', stackpath )
 		return items
 
+	def edit_game(self, gameId: int):
+		stackpath = "edit_game"
+		print('\x1b[6;30;42m' + "sql---->" + '\x1b[0m', stackpath )
+
+		conn = sqlite3.connect('quiz.db')
+		c = conn.cursor()
+		userid = 0
+
+		c.execute("""UPDATE games SET 
+				game_name='{game_name}', 
+				questions_number={questions_number}, 
+				played_statistics='{played_statistics}' 
+			WHERE rowid={gameId} """.format(
+				game_name=self.game_name,
+				questions_number=self.questions_number,
+				played_statistics=self.played_statistics,
+				gameId=gameId
+			))
+
+		conn.commit()
+		conn.close()
+		print("game editted")
+
+		print('\x1b[6;30;42m' + "<----sql" + '\x1b[0m', stackpath )
+
 
 class questions_db(object):
 	def __init__(self, questions: List[Question]):
 		self.questions = questions
-
 
 	def create_questions(self, gameId: int):
 		stackpath = "create_questions"
@@ -205,7 +229,6 @@ class questions_db(object):
 		print("new questions created")
 		print('\x1b[6;30;42m' + "<----sql" + '\x1b[0m', stackpath )
 
-
 	def get_questions_by_gameid(gameId: int):
 		stackpath = "get_questions_by_gameid"
 		print('\x1b[6;30;42m' + "sql---->" + '\x1b[0m', stackpath )
@@ -214,7 +237,7 @@ class questions_db(object):
 		c = conn.cursor()
 		userid = 0
 
-		c.execute("SELECT * FROM questions WHERE game_id = '{gameId}' LIMIT 1".format(gameId=gameId))
+		c.execute("SELECT rowid, * FROM questions WHERE game_id = '{gameId}' ".format(gameId=gameId))
 		items = c.fetchall()
 
 		if(items is None):
@@ -227,3 +250,43 @@ class questions_db(object):
 
 		print('\x1b[6;30;42m' + "<----sql" + '\x1b[0m', stackpath )
 		return items
+	
+	def edit_questions_by_questionId(self):
+		stackpath = "edit_questions_by_gameid"
+		print('\x1b[6;30;42m' + "sql---->" + '\x1b[0m', stackpath )
+
+		conn = sqlite3.connect('quiz.db')
+		c = conn.cursor()
+		userid = 0
+
+		for question in self.questions:
+
+			print(
+					question.id,
+					question.question_type,
+					question.question,
+					question.correct_resp,
+					question.other_variants,
+					question.winning_points
+				)
+
+			c.execute("""UPDATE questions SET 
+					question_type='{question_type}',
+					question='{question}',
+					correct_resp='{correct_resp}',
+					other_variants='{other_variants}',
+					winning_points='{winning_points}'
+				
+				WHERE rowid={rowid} """.format(
+					rowid=question.id,
+					question_type=question.question_type,
+					question=question.question,
+					correct_resp=question.correct_resp,
+					other_variants=question.other_variants,
+					winning_points=question.winning_points
+				))
+
+		conn.commit()
+		conn.close()
+		print("new questions created")
+		print('\x1b[6;30;42m' + "<----sql" + '\x1b[0m', stackpath )
