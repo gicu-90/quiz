@@ -9,8 +9,8 @@ JWT_SECRET = "somekindofsecret"
 
 oauth2scheme = OAuth2PasswordBearer(tokenUrl="login")
 
-
 router = APIRouter()
+
 
 
 def get_user_by_username(username: str):
@@ -48,13 +48,22 @@ def get_current_user(token: str=Depends(oauth2scheme)):
 
 		user = user_db.get_user_by_id(payload["id"])
 		user = User.to_User_model(user)
+
 	except:
 		raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED,
 			detail='Invalid username or password')
 
 	print('\x1b[0;33;44m' + "<-----def" + '\x1b[0m', stackpath)
 	return user
-		
+
+def is_logged_user_admin(user: User=Depends(get_current_user)):
+	
+	if (False == bool(user.user_type)):
+		raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED,
+			detail='Needs to be admin')
+
+	return True
+
 def create_user(user: User):
 	stackpath = "create_user"
 	print('\x1b[0;33;44m' + "def----->" + '\x1b[0m', stackpath)
@@ -97,6 +106,7 @@ def login_generate_token(form_data: OAuth2PasswordRequestForm=Depends()):
 	print('\x1b[0;30;44m' + "post------>" + '\x1b[0m', stackpath)
 
 	user = authenticate_user(form_data.username, form_data.password)
+
 	if not user:
 		raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED,
 			detail='Invalid username or password')
@@ -120,7 +130,7 @@ def get_user(user: User=Depends(get_current_user)):
 
 
 @router.get("/clear-users")
-def clear_users_table():
+def clear_users_table(isAdmin=Depends(is_logged_user_admin)):
 	stackpath = "clear_users_table"
 	print('\x1b[0;30;44m' + "get------>" + '\x1b[0m', stackpath)
 
@@ -132,15 +142,21 @@ def clear_users_table():
 
 
 @router.get("/get-user-by-id")
-def get_user_by_id(userid: int):
+def get_user_by_id(userid: int, isAdmin=Depends(is_logged_user_admin)):
 	stackpath = "get_user_by_id"
 	print('\x1b[0;30;44m' + "get------>" + '\x1b[0m', stackpath)
-	
-	user = user_db.get_user_by_id(userid)
-	
-	if not user:
+
+	db_user = user_db.get_user_by_id(userid)
+
+	if not db_user:
 		return {"error" : "user not found"}
+	
+	user = User.to_User_model(db_user)
 	
 	print('\x1b[0;30;44m' + "<------get" + '\x1b[0m', stackpath)
 	return user
 
+
+@router.get("/get_all_users")
+def get_all_users(isAdmin=Depends(is_logged_user_admin)):
+	db_user = user_db.get_all_users()

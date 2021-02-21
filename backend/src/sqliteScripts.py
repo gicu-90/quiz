@@ -1,6 +1,7 @@
 import sqlite3
-from schemas import User, Game, Question
+from schemas import User, Game, Question, PlayedStats
 from typing import List
+import json
 
 class user_db(object):
 
@@ -67,15 +68,13 @@ class user_db(object):
 		c = conn.cursor()
 		userid = 0
 
-		c.execute("SELECT * FROM users WHERE username = '{username}' LIMIT 1".format(username=username))
+		c.execute("SELECT rowid, * FROM users WHERE username = '{username}' LIMIT 1".format(username=username))
 		items = c.fetchone()
 
 		if(items is None):
 			print("no item match from query")
 			print("<----sql", stackpath)
 			return False
-
-		items = (c.lastrowid,) + items
 
 		conn.commit()
 		conn.close()
@@ -91,9 +90,8 @@ class user_db(object):
 
 		conn = sqlite3.connect('quiz.db')
 		c = conn.cursor()
-		userid = 0
 
-		c.execute("SELECT * FROM users WHERE rowid={rowid};".format(rowid=rowid+1))
+		c.execute("SELECT rowid, * FROM users WHERE rowid={rowid};".format(rowid=rowid))
 
 		items = c.fetchone()
 			
@@ -102,14 +100,34 @@ class user_db(object):
 			print("<----sql", stackpath)
 			return False
 
-		items = (c.lastrowid,) + items
-			
 		conn.commit()
 		conn.close()
 
 		print("user extracted")
 		print('\x1b[6;30;42m' + "<----sql" + '\x1b[0m', stackpath )
 		return items
+
+	def get_all_users():
+		stackpath = "get_all_users"
+		print('\x1b[6;30;42m' + "sql---->" + '\x1b[0m', stackpath )
+
+		conn = sqlite3.connect('quiz.db')
+		c = conn.cursor()
+
+		c.execute("SELECT rowid, * FROM users;")
+
+		items = c.fetchall()
+
+		if(items is None):
+			print("no item match from query")
+			print("<----sql", stackpath)
+			return False
+
+		conn.commit()
+		conn.close()
+
+		print("user extracted")
+		print('\x1b[6;30;42m' + "<----sql" + '\x1b[0m', stackpath )
 
 
 class games_db(object):
@@ -133,7 +151,7 @@ class games_db(object):
 			) VALUES (?,?,?);""", (
 				self.game_name,
 				self.questions_number,
-				self.played_statistics,
+				json.dumps(self.played_statistics)
 				))
 
 		gameid =  c.lastrowid
@@ -153,15 +171,13 @@ class games_db(object):
 		c = conn.cursor()
 		userid = 0
 
-		c.execute("SELECT * FROM games WHERE rowid = '{gameId}' LIMIT 1".format(gameId=gameId))
+		c.execute("SELECT rowid, * FROM games WHERE rowid = '{gameId}' LIMIT 1".format(gameId=gameId))
 		items = c.fetchone()
 
 		if(items is None):
 			print("no item match from query")
 			print("<----sql", stackpath)
 			return False
-
-		items = (c.lastrowid,) + items
 
 		conn.commit()
 		conn.close()
@@ -179,12 +195,10 @@ class games_db(object):
 
 		c.execute("""UPDATE games SET 
 				game_name='{game_name}', 
-				questions_number={questions_number}, 
-				played_statistics='{played_statistics}' 
+				questions_number={questions_number}
 			WHERE rowid={gameId} """.format(
 				game_name=self.game_name,
 				questions_number=self.questions_number,
-				played_statistics=self.played_statistics,
 				gameId=gameId
 			))
 
@@ -192,6 +206,56 @@ class games_db(object):
 		conn.close()
 		print("game editted")
 
+		print('\x1b[6;30;42m' + "<----sql" + '\x1b[0m', stackpath )
+
+	def update_game_played_statistics(gameId: int, played_statistics: PlayedStats):
+		stackpath = "update_game_played_statistics"
+		print('\x1b[6;30;42m' + "sql---->" + '\x1b[0m', stackpath )
+
+		conn = sqlite3.connect('quiz.db')
+		c = conn.cursor()
+		userid = 0
+
+		c.execute("SELECT played_statistics FROM games WHERE rowid = '{gameId}' LIMIT 1".format(gameId=gameId))
+		(extracted_played_statistics,) = c.fetchone()
+		
+		new_stats_list = [played_statistics.__dict__]
+		
+		decoded_extracted_played_statistics = json.loads(extracted_played_statistics)
+		if(decoded_extracted_played_statistics is not None):
+			new_stats_list = new_stats_list + decoded_extracted_played_statistics
+
+		new_encoded_stats = json.dumps(new_stats_list)
+		
+
+		c.execute("""UPDATE games SET 
+				played_statistics='{played_statistics}' 
+			WHERE rowid={gameId} """.format(
+				played_statistics=new_encoded_stats,
+				gameId=gameId
+			))
+
+		conn.commit()
+		conn.close()
+		print("game editted")
+
+		print('\x1b[6;30;42m' + "<----sql" + '\x1b[0m', stackpath )
+
+	def clear_games():
+		stackpath = "clear_games"
+		print('\x1b[6;30;42m' + "sql---->" + '\x1b[0m', stackpath )
+
+		conn = sqlite3.connect('quiz.db')
+		c = conn.cursor()
+		c.execute("DELETE FROM games")
+
+
+		conn.commit()
+		conn.close()
+		
+		questions_db.clear_questions()
+
+		print("all is cleared")
 		print('\x1b[6;30;42m' + "<----sql" + '\x1b[0m', stackpath )
 
 
@@ -219,8 +283,8 @@ class questions_db(object):
 					gameId,
 					question.question_type,
 					question.question,
-					question.correct_resp,
-					question.other_variants,
+					json.dumps(question.correct_resp),
+					json.dumps(question.other_variants),
 					question.winning_points,
 					))
 
@@ -252,7 +316,7 @@ class questions_db(object):
 		return items
 	
 	def edit_questions_by_questionId(self):
-		stackpath = "edit_questions_by_gameid"
+		stackpath = "edit_questions_by_questionId"
 		print('\x1b[6;30;42m' + "sql---->" + '\x1b[0m', stackpath )
 
 		conn = sqlite3.connect('quiz.db')
@@ -260,16 +324,6 @@ class questions_db(object):
 		userid = 0
 
 		for question in self.questions:
-
-			print(
-					question.id,
-					question.question_type,
-					question.question,
-					question.correct_resp,
-					question.other_variants,
-					question.winning_points
-				)
-
 			c.execute("""UPDATE questions SET 
 					question_type='{question_type}',
 					question='{question}',
@@ -281,12 +335,27 @@ class questions_db(object):
 					rowid=question.id,
 					question_type=question.question_type,
 					question=question.question,
-					correct_resp=question.correct_resp,
-					other_variants=question.other_variants,
+					correct_resp=json.dumps(question.correct_resp),
+					other_variants=json.dumps(question.other_variants),
 					winning_points=question.winning_points
 				))
 
 		conn.commit()
 		conn.close()
 		print("new questions created")
+		print('\x1b[6;30;42m' + "<----sql" + '\x1b[0m', stackpath )
+
+		
+	def clear_questions():
+		stackpath = "clear_questions"
+		print('\x1b[6;30;42m' + "sql---->" + '\x1b[0m', stackpath )
+
+		conn = sqlite3.connect('quiz.db')
+		c = conn.cursor()
+		c.execute("DELETE FROM questions")
+
+		conn.commit()
+		conn.close()
+
+		print("all is cleared")
 		print('\x1b[6;30;42m' + "<----sql" + '\x1b[0m', stackpath )

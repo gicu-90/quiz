@@ -4,6 +4,7 @@ from typing import List, Optional
 from enum import Enum
 import bcrypt
 from fastapi.security import OAuth2PasswordBearer, OAuth2PasswordRequestForm
+import json
 
 class User_Type(Enum):
 	User = 0
@@ -36,6 +37,21 @@ class User(BaseModel):
 		print("<----def-model", stackpath)
 		return usermodel
 
+	
+class Question_To_Answer():
+	question_type: str 
+	question: str 
+	answers: List[str]
+
+class Game_To_Answer():
+	game_id: int
+	game_name: str
+	questions_number: int
+	questions: List[Question_To_Answer]
+
+class PlayedStats(BaseModel):
+	username: str = None
+	points: int = None
 
 	
 class Question_Type(Enum):
@@ -46,7 +62,7 @@ class Game(BaseModel):
 	id: int = None
 	game_name: str = Field(..., max_length=100)
 	questions_number: int = None
-	played_statistics: str = None
+	played_statistics: List[PlayedStats]= None
 	
 	def to_Game_model(db_model):
 		stackpath = "to_Game_model"
@@ -58,19 +74,20 @@ class Game(BaseModel):
 			id=id, 
 			game_name=game_name, 
 			questions_number=questions_number, 
-			played_statistics=played_statistics 
+			played_statistics=json.loads(played_statistics) 
 		) 
 		
 		print("<----def-model", stackpath)
 		return gamemodel
+
 
 class Question(BaseModel):
 	id: int = None
 	game_id: int = None
 	question_type: str 
 	question: str = Field(...)
-	correct_resp: str = Field(...)
-	other_variants: str = Field(...)
+	correct_resp: List[str] = Field(...)
+	other_variants: List[str] = Field(...)
 	winning_points: int = Field(...)
 	
 	def to_Question_model(db_model):
@@ -84,10 +101,16 @@ class Question(BaseModel):
 			game_id=game_id, 
 			question_type=question_type, 
 			question=question,
-			correct_resp=correct_resp,
-			other_variants=other_variants,
+			correct_resp=json.loads(correct_resp),
+			other_variants=json.loads(other_variants),
 			winning_points=winning_points 
 		) 
 		
 		print("<----def-model", stackpath)
 		return questionmodel
+
+
+class Responses(BaseModel):
+	question_id: int
+	responses: List[str]
+
