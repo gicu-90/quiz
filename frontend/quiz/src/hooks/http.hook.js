@@ -7,8 +7,9 @@ export const useHttp = () => {
     const request = useCallback( async (url, method = 'GET', body = null, headers = {}, isOAuth = false) => {
         setLoading(true)
 
-        try {
+        console.log(body)
 
+        try {
             if (isOAuth) {
                 let formdata = new FormData()
                 for( let prop in body ){
@@ -21,6 +22,8 @@ export const useHttp = () => {
                 body = JSON.stringify(body)
                 headers["Content-Type"] = "application/json"
             }
+
+            console.log(body)
 
             const response = await fetch(url, {method, body, headers})
             const data = await response.json()

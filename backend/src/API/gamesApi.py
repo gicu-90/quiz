@@ -1,5 +1,5 @@
 from fastapi import APIRouter, Depends, HTTPException
-from sqliteScripts import games_db, questions_db
+from sqliteScripts import games_db, questions_db, user_db
 from schemas import User, Game, Question, Responses, PlayedStats, Game_To_Answer, Question_To_Answer
 from typing import List
 from .usersApi import get_current_user, is_logged_user_admin
@@ -110,15 +110,37 @@ def get_game_to_play_by_id(gameId: int,  user: User=Depends(get_current_user)):
 def post_edit_game_by_id(game: Game, questions: List[Question], isAdmin=Depends(is_logged_user_admin)):
     stackpath = "post_edit_game_by_id"
     print('\x1b[0;30;44m' + "post------>" + '\x1b[0m', stackpath )
-    
-    game.questions_number = len(questions)
 
     if not game.id:
         return {"error":"game to edit must have id"}
-    
+     
+    current_game = get_game_as_gamemodel_by_id(game.id)
+    if not current_game:
+            return {"error":"game doe not exist"}
+
     for question in questions:
         if not question.id:
             return {"error":"all questions to edit must have id"}
+
+    game.questions_number = len(questions)
+
+    #check if some question was delleted
+    if (current_game.questions_number != game.questions_number):
+        existing_questions_id = []
+        editted_questions_id = []
+
+        current_questions = get_questions_as_list_by_gameid(game.id)
+        for existing_question in current_questions:
+            existing_questions_id.append(existing_question.id)
+        for question in questions:
+            editted_questions_id.append(question.id)
+
+        s = set(existing_questions_id)
+        questions_id_to_delete = [x for x in editted_questions_id if x not in s]
+        
+        for id in questions_id_to_delete:
+            questions_db.delete_questions_by_gameid(id)
+
 
     db_game = games_db(game)
     edittedgameid = db_game.edit_game(game.id)
@@ -139,14 +161,18 @@ def answer_game(gameId: int, responses: List[Responses], user: User=Depends(get_
 
 
     game_model = get_game_as_gamemodel_by_id(gameId)
-    questions_list = get_questions_as_list_by_gameid(gameId)
 
     if (False == game_model):
         return {"No exist game with that id"}
+    
+    for stat in game_model.played_statistics:
+        if (stat.username == user.username):
+            return {"denied": "user already played"}
 
-    winned_points = 0
 
     #loop responses
+    winned_points = 0
+    questions_list = get_questions_as_list_by_gameid(gameId)
     for response in responses:
         response.question_id
 
@@ -168,7 +194,9 @@ def answer_game(gameId: int, responses: List[Responses], user: User=Depends(get_
 
     played_statistic = PlayedStats(username=user.username,points=winned_points)
     games_db.update_game_played_statistics(gameId, played_statistic)
-    
+
+    user_db.increment_user_played_games_and_points_by_userid(user.id, winned_points)
+
     print('\x1b[0;30;44m' + "<------post" + '\x1b[0m', stackpath)
     return {"winned_points" : winned_points}
 
@@ -179,6 +207,17 @@ def clear_games_table(isAdmin=Depends(is_logged_user_admin)):
 	print('\x1b[0;30;44m' + "get------>" + '\x1b[0m', stackpath)
 
 	games_db.clear_games()
+	
+	print('\x1b[0;30;44m' + "<------get" + '\x1b[0m', stackpath)
+	return True
+
+
+@router.get("/delete_game_by_id")
+def delete_game_by_id(gameid: int, isAdmin=Depends(is_logged_user_admin)):
+	stackpath = "delete_game_by_id"
+	print('\x1b[0;30;44m' + "get------>" + '\x1b[0m', stackpath)
+
+	games_db.delete_game_by_id(gameid)
 	
 	print('\x1b[0;30;44m' + "<------get" + '\x1b[0m', stackpath)
 	return True

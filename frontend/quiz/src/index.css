@@ -17,3 +17,43 @@ input.yellow-input:focus {
     border-bottom: 1px solid #ffeb3b!important;
     box-shadow: 0 1px 0 0 #ffeb3b!important;
 }
+
+.question-input {
+    padding-left: 5px;
+}
+
+.answers-inputs {
+    padding-left: 50px;
+}
+
+.input-title h5{
+    display: inline-block!important;
+}
+
+.input-title i {
+    margin-top: 20px;
+    margin-right: 20px;
+    float: right;
+    cursor: pointer;
+
+}
+
+.own-color-24 {
+    background: #242582 !important;
+}
+
+.own-color-55 {
+    background: #553D67 !important;
+}
+
+.own-color-F6 {
+    background: #F64C72 !important;
+}
+
+.own-color-99 {
+    background: #99738E !important;
+}
+
+.own-color-2F {
+    background: #2F2FA2 !important;
+}

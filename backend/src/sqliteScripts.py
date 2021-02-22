@@ -4,14 +4,12 @@ from typing import List
 import json
 
 class user_db(object):
-
 	def __init__(self, user: User):
 		self.username = user.username
 		self.password = user.password
 		self.total_winned_points = user.total_winned_points
 		self.played_games = user.played_games
 		self.user_type = user.user_type
-
 		
 	def clear_users():
 		stackpath = "clear_users"
@@ -26,7 +24,6 @@ class user_db(object):
 
 		print("all is cleared")
 		print('\x1b[6;30;42m' + "<----sql" + '\x1b[0m', stackpath )
-
 
 	def createUser_returnId(self):
 		stackpath = "createUser_returnId"
@@ -59,7 +56,6 @@ class user_db(object):
 		print('\x1b[6;30;42m' + "<----sql" + '\x1b[0m', stackpath )
 		return userid
 
-
 	def get_user_by_username(username: str):
 		stackpath = "get_user_by_username"
 		print('\x1b[6;30;42m' + "sql---->" + '\x1b[0m', stackpath )
@@ -82,7 +78,6 @@ class user_db(object):
 		print("user extracted")
 		print('\x1b[6;30;42m' + "<----sql" + '\x1b[0m', stackpath )
 		return items
-
 
 	def get_user_by_id(rowid: int):
 		stackpath = "get_user_by_id"
@@ -117,6 +112,44 @@ class user_db(object):
 		c.execute("SELECT rowid, * FROM users;")
 
 		items = c.fetchall()
+
+		if(items is None):
+			print("no item match from query")
+			print("<----sql", stackpath)
+			return False
+
+		conn.commit()
+		conn.close()
+
+		print("user extracted")
+		print('\x1b[6;30;42m' + "<----sql" + '\x1b[0m', stackpath )
+
+	def increment_user_played_games_and_points_by_userid(userid: int, points: int):
+		stackpath = "increment_user_played_games_and_points_by_userid"
+		print('\x1b[6;30;42m' + "sql---->" + '\x1b[0m', stackpath )
+
+		conn = sqlite3.connect('quiz.db')
+		c = conn.cursor()
+
+		c.execute("SELECT played_games, total_winned_points FROM users WHERE rowid={rowid};".format(rowid=userid))
+		items = c.fetchone()
+
+
+		(total_winned_points, played_games) = items
+		
+		played_games += 1
+		total_winned_points += points
+		
+		c.execute("""UPDATE users SET 
+					played_games='{played_games}',
+					total_winned_points='{total_winned_points}'
+					
+				WHERE rowid={rowid} """.format(
+					rowid=userid,
+					played_games=played_games,
+					total_winned_points=total_winned_points
+				))
+					
 
 		if(items is None):
 			print("no item match from query")
@@ -257,6 +290,23 @@ class games_db(object):
 
 		print("all is cleared")
 		print('\x1b[6;30;42m' + "<----sql" + '\x1b[0m', stackpath )
+		
+	def delete_game_by_id(rowid: int):
+		stackpath = "delete_game_by_id"
+		print('\x1b[6;30;42m' + "sql---->" + '\x1b[0m', stackpath )
+
+		conn = sqlite3.connect('quiz.db')
+		c = conn.cursor()
+		c.execute("DELETE FROM games where rowid={rowid}".format(rowid=rowid))
+
+
+		conn.commit()
+		conn.close()
+		
+		questions_db.delete_questions_by_gameid(rowid)
+
+		print("game deleted")
+		print('\x1b[6;30;42m' + "<----sql" + '\x1b[0m', stackpath )
 
 
 class questions_db(object):
@@ -345,7 +395,6 @@ class questions_db(object):
 		print("new questions created")
 		print('\x1b[6;30;42m' + "<----sql" + '\x1b[0m', stackpath )
 
-		
 	def clear_questions():
 		stackpath = "clear_questions"
 		print('\x1b[6;30;42m' + "sql---->" + '\x1b[0m', stackpath )
@@ -359,3 +408,18 @@ class questions_db(object):
 
 		print("all is cleared")
 		print('\x1b[6;30;42m' + "<----sql" + '\x1b[0m', stackpath )
+
+	def delete_questions_by_gameid(gameid):
+		stackpath = "delete_questions_by_gameid"
+		print('\x1b[6;30;42m' + "sql---->" + '\x1b[0m', stackpath )
+
+		conn = sqlite3.connect('quiz.db')
+		c = conn.cursor()
+		c.execute("DELETE FROM questions where game_id={gameid}".format(gameid=gameid))
+
+		conn.commit()
+		conn.close()
+
+		print("all is cleared")
+		print('\x1b[6;30;42m' + "<----sql" + '\x1b[0m', stackpath )
+
