@@ -30,7 +30,6 @@ export const AuthPage = () => {
             const data = await request('/register', "POST", {...form}, {})
             console.log("returned data", data)
             auth.login(data.access_token, data.user_type)
-            console.log("legdin")
         } catch (e) {}
     }
     
